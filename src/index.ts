@@ -1,6 +1,7 @@
 import "reflect-metadata";
 import "dotenv/config";
 import express from "express";
+import morgan from "morgan";
 import { AppDataSource } from "./database";
 import appUsersRouter from "./routes/users";
 
@@ -12,6 +13,8 @@ AppDataSource.initialize()
   .catch((error) => {
     throw new Error("Connection to the data source failed.\n" + error);
   });
+
+app.use(morgan(process.env.NODE_ENV == "development" ? "dev" : "short"));
 
 app.use(appUsersRouter);
 
