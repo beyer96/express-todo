@@ -1,15 +1,15 @@
 import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
 
 @Entity()
-export class User {
+export class AppUser {
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column()
-  firstName: string;
+  first_name: string;
 
   @Column()
-  lastName: string;
+  last_name: string;
 
   @Column({ unique: true })
   username: string;
@@ -21,13 +21,13 @@ export class User {
   age: number;
 
   @Column({ default: true })
-  isActive: boolean;
+  is_active: boolean;
 
   @Column({
     type: "simple-json",
     nullable: true
   })
-  additionalInfo: {
+  additional_info: {
     shoeSize: number;
     hairColor: string;
   }
@@ -36,5 +36,5 @@ export class User {
     type: "simple-array",
     default: []
   })
-  familyMembers: string[]
+  family_members: string[]
 }
