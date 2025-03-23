@@ -1,5 +1,5 @@
 import { DataSource } from "typeorm";
-import { AppUser } from "../entity/AppUser";
+import { Users } from "../entity/users";
 
 export const AppDataSource = new DataSource({
   synchronize: true,
@@ -9,5 +9,5 @@ export const AppDataSource = new DataSource({
   username: process.env.DB_USERNAME || "express_todo_dev",
   password: process.env.DB_PASSWORD || "express_todo_dev",
   database: process.env.DB_NAME || "express_todo_dev",
-  entities: [AppUser]
+  entities: [Users]
 });
