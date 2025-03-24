@@ -43,5 +43,5 @@ export default class Users {
     () => Posts,
     post => post.user
   )
-  posts: Posts
+  posts: Posts[]
 }
