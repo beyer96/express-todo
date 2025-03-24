@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { AppDataSource } from "../database";
-import { Users } from "../entity/users";
+import Users from "../entity/users";
 
 const router = Router();
 const users = AppDataSource.getRepository(Users);

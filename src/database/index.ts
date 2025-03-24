@@ -1,5 +1,5 @@
 import { DataSource } from "typeorm";
-import { Users } from "../entity/users";
+import Users from "../entity/users";
 
 export const AppDataSource = new DataSource({
   synchronize: true,
