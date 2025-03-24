@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from "typeorm";
+import Posts from "./posts";
 
 @Entity()
 export default class Users {
@@ -37,4 +38,10 @@ export default class Users {
     default: []
   })
   family_members: string[]
+
+  @OneToMany(
+    () => Posts,
+    post => post.user
+  )
+  posts: Posts
 }
