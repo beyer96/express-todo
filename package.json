@@ -4,7 +4,9 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "dev": "nodemon ./src/index.ts"
+    "dev": "nodemon ./src/index.ts",
+    "db:migrate": "typeorm-ts-node-commonjs migration:run -d ./src/database/index.ts",
+    "db:create-migration": "typeorm migration:create ./src/database/migrations/$NAME"
   },
   "devDependencies": {
     "@tsconfig/node22": "^22.0.0",
