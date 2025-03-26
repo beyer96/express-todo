@@ -1,8 +1,13 @@
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 import { Router } from "express";
+import { Redis } from "ioredis";
 import Users from "../entity/users";
 
 const router = Router();
+const redis = new Redis(process.env.REDIS_URL!);
+
+redis.on("connect", () => console.log("Connected to Redis"));
 
 router.post("/auth/signup", async (req, res) => {
   const { firstName, lastName, username, email, password } = req.body;
