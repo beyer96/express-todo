@@ -10,21 +10,6 @@ router.get("/users", async (req, res) => {
   res.json({ status: "OK", data: usersArray });
 });
 
-router.post("/user", async (req, res) => {
-  const { firstName, lastName, username, email, password } = req.body;
-  const user = Users.create({
-    first_name: firstName,
-    last_name: lastName,
-    username,
-    password,
-    email,
-  });
-
-  await user.save();
-
-  res.status(200).json(user);
-});
-
 router.route("/user/:userId")
   .get(async (req, res) => {
     const user = await Users.findOne({ where: { id: +req.params.userId } });
