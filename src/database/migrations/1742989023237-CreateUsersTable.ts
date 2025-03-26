@@ -9,7 +9,9 @@ export class CreateUsersTable1742989023237 implements MigrationInterface {
         {
           name: "id",
           type: "int",
-          isPrimary: true
+          isPrimary: true,
+          isGenerated: true,
+          generationStrategy: "increment"
         },
         {
           name: "first_name",
