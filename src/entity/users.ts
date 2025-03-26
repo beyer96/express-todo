@@ -1,5 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, BaseEntity } from "typeorm";
-import Posts from "./posts";
+import { Entity, PrimaryGeneratedColumn, Column, BaseEntity } from "typeorm";
 
 @Entity()
 export default class Users extends BaseEntity {
@@ -18,30 +17,6 @@ export default class Users extends BaseEntity {
   @Column({ unique: true })
   email: string;
 
-  @Column()
-  age: number;
-
-  @Column({ default: true })
-  is_active: boolean;
-
-  @Column({
-    type: "simple-json",
-    nullable: true
-  })
-  additional_info: {
-    shoeSize: number;
-    hairColor: string;
-  }
-
-  @Column({
-    type: "simple-array",
-    default: []
-  })
-  family_members: string[]
-
-  @OneToMany(
-    () => Posts,
-    post => post.user
-  )
-  posts: Posts[]
+  @Column({ type: "text" })
+  password: string;
 }

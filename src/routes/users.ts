@@ -12,18 +12,13 @@ router.get("/users", async (req, res) => {
 
 router.route("/user")
   .post(async (req, res) => {
-    const { firstName, lastName, username, email, age, shoeSize, hairColor, familyMembers } = req.body;
+    const { firstName, lastName, username, email, password } = req.body;
     const user = Users.create({
       first_name: firstName,
       last_name: lastName,
       username,
+      password,
       email,
-      age,
-      additional_info: {
-        shoeSize,
-        hairColor
-      },
-      family_members: familyMembers
     });
 
     await user.save();
