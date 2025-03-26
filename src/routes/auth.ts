@@ -20,4 +20,24 @@ router.post("/auth/signup", async (req, res) => {
   res.status(200).json(user);
 });
 
+router.post("/auth/signin", async (req, res) => {
+  const { username, password } = req.body;
+  const user = await Users.findOneBy({ username });
+  if (!user) {
+    res.sendStatus(404);
+
+    return;
+  }
+
+  const { password: hashedPassword, ...userData } = user;
+  const validLogin = await bcrypt.compare(password, hashedPassword);
+  if (!validLogin) {
+    res.sendStatus(401);
+
+    return;
+  }
+
+  res.status(200).json(userData);
+});
+
 export default router;
