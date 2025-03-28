@@ -1,48 +1,166 @@
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
-import { Router } from "express";
+import jwt, { JwtPayload } from "jsonwebtoken";
+import { Request, Response, NextFunction, Router } from "express";
 import { Redis } from "ioredis";
 import Users from "../entity/users";
 
+const FIFTEEN_MINUTES = 15 * 60;
+const SEVEN_DAYS = 7 * 24 * 60 * 60;
+const JWT_SECRET = process.env.JWT_SECRET!;
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET!;
+const REFRESH_TOKEN_COOKIE_NAME = "express_todo_app_refresh_token";
 const router = Router();
 const redis = new Redis(process.env.REDIS_URL!);
 
-redis.on("connect", () => console.log("Connected to Redis"));
+const generateAccessToken = (user: Users) => {
+  return jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, {
+    expiresIn: FIFTEEN_MINUTES,
+  });
+};
 
-router.post("/auth/signup", async (req, res) => {
-  const { firstName, lastName, username, email, password } = req.body;
-  const hashedPassword = await bcrypt.hash(password, 10);
-  const user = Users.create({
-    first_name: firstName,
-    last_name: lastName,
-    username,
-    password: hashedPassword,
-    email,
+const generateRefreshToken = async (user: Users) => {
+  const refreshToken = jwt.sign({ id: user.id, username: user.username }, JWT_REFRESH_SECRET, {
+    expiresIn: SEVEN_DAYS,
   });
 
-  await user.save();
+  await redis.set(`refreshToken:${refreshToken}`, user.id, "EX", SEVEN_DAYS);
 
-  res.status(200).json(user);
+  return refreshToken;
+};
+
+router.post("/auth/signup", async (req, res) => {
+  try {
+    const { firstName, lastName, username, email, password } = req.body;
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = Users.create({
+      first_name: firstName,
+      last_name: lastName,
+      username,
+      password: hashedPassword,
+      email,
+    });
+
+    await user.save();
+    res.status(201).json({ message: "User created successfully" });
+  } catch (error) {
+    res.status(500).json({ error: "Internal server error" });
+  }
 });
 
 router.post("/auth/signin", async (req, res) => {
-  const { username, password } = req.body;
-  const user = await Users.findOneBy({ username });
-  if (!user) {
-    res.sendStatus(404);
+  try {
+    const { username, password } = req.body;
+    const user = await Users.findOneBy({ username });
+    if (!user) {
+      res.sendStatus(404);
+      
+      return
+    }
 
-    return;
+    const validLogin = await bcrypt.compare(password, user.password);
+    if (!validLogin) {
+      res.sendStatus(401);
+
+      return;
+    }
+
+    const accessToken = generateAccessToken(user);
+    const refreshToken = await generateRefreshToken(user);
+
+    res.cookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken, {
+      httpOnly: true,
+      sameSite: "strict",
+      secure: process.env.NODE_ENV === "production"
+    });
+    res.status(200).json({ accessToken });
+  } catch (error) {
+    res.status(500).json({ error: "Internal server error" });
   }
-
-  const { password: hashedPassword, ...userData } = user;
-  const validLogin = await bcrypt.compare(password, hashedPassword);
-  if (!validLogin) {
-    res.sendStatus(401);
-
-    return;
-  }
-
-  res.status(200).json(userData);
 });
 
+router.post("/auth/token", async (req, res) => {
+  const refreshToken = req.cookies[REFRESH_TOKEN_COOKIE_NAME];
+  const storedUserId = await redis.get(`refreshToken:${refreshToken}`);
+  if (!refreshToken || !storedUserId) {
+    res.sendStatus(403);
+
+    return;
+  }
+
+  jwt.verify(refreshToken, JWT_REFRESH_SECRET, async (err: any, payload: any) => {
+    if (err) return res.sendStatus(403);
+
+    const userInDatabase = await Users.findOneBy({ id: payload.id });
+    if (!userInDatabase) return res.sendStatus(403);
+
+    const newAccessToken = generateAccessToken(userInDatabase);
+    const newRefreshToken = await generateRefreshToken(userInDatabase);
+
+    await redis.del(`refreshToken:${refreshToken}`);
+
+    res.cookie(REFRESH_TOKEN_COOKIE_NAME, newRefreshToken, {
+      httpOnly: true,
+      sameSite: "strict",
+      secure: process.env.NODE_ENV === "production"
+    });
+    return res.json({ accessToken: newAccessToken });
+  });
+});
+
+router.post("/auth/logout", async (req, res) => {
+  const authHeader = req.headers["authorization"];
+  const accessToken = authHeader && authHeader.split(" ")[1];
+  const refreshToken = req.cookies[REFRESH_TOKEN_COOKIE_NAME];
+  if (!accessToken || !refreshToken) {
+    res.sendStatus(400);
+
+    return;
+  }
+
+  const decoded = jwt.verify(accessToken, JWT_SECRET) as JwtPayload;
+  const expirationTime = decoded.exp! - Math.floor(Date.now() / 1000);
+
+  if (expirationTime > 0) {
+    await redis.set(`revokedAccessToken:${accessToken}`, "revoked", "EX", expirationTime);
+  }
+
+  await redis.del(`refreshToken:${refreshToken}`);
+  res.clearCookie(REFRESH_TOKEN_COOKIE_NAME, {
+    httpOnly: true,
+    sameSite: "strict",
+    secure: process.env.NODE_ENV === "production"
+  });
+
+  res.sendStatus(204);
+});
+
+const authenticateToken = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  const authHeader = req.headers["authorization"];
+  const accessToken = authHeader && authHeader.split(" ")[1];
+
+  if (!accessToken) {
+    res.status(401).json({ error: "Access Denied: No Token Provided" });
+    return;
+  }
+  
+  const revokedAccessToken = await redis.get(`revokedAccessToken:${accessToken}`);
+  if (revokedAccessToken) {
+    res.status(403).json({ error: "Invalid or Expired Token" });
+
+    return;
+  }
+
+  jwt.verify(accessToken, JWT_SECRET as string, (err, user) => {
+    if (err) {
+      res.status(403).json({ error: "Invalid or Expired Token" });
+      return;
+    }
+
+    // @ts-expect-error TODO
+    req.user = user as JwtPayload;
+    next();
+  });
+};
+
+export { authenticateToken };
 export default router;
