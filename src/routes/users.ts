@@ -44,9 +44,14 @@ router.route("/user/:userId")
   })
   .delete(async (req, res) => {
     const user = await Users.findOne({ where: { id: +req.params.userId } });
-    const { firstName, lastName, username, email } = req.body;
     if (!user) {
       res.sendStatus(404);
+
+      return;
+    }
+
+    if (!req.user || +req.params.userId !== req.user.id) {
+      res.sendStatus(401);
 
       return;
     }

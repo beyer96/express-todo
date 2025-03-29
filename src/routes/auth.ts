@@ -3,6 +3,7 @@ import jwt, { JwtPayload } from "jsonwebtoken";
 import { Request, Response, NextFunction, Router } from "express";
 import { Redis } from "ioredis";
 import Users from "../entity/users";
+import { UserData } from "../types/auth";
 
 const FIFTEEN_MINUTES = 15 * 60;
 const SEVEN_DAYS = 7 * 24 * 60 * 60;
@@ -13,13 +14,15 @@ const router = Router();
 const redis = new Redis(process.env.REDIS_URL!);
 
 const generateAccessToken = (user: Users) => {
-  return jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, {
+  const { password, ...userData } = user;
+  return jwt.sign(userData, JWT_SECRET, {
     expiresIn: FIFTEEN_MINUTES,
   });
 };
 
 const generateRefreshToken = async (user: Users) => {
-  const refreshToken = jwt.sign({ id: user.id, username: user.username }, JWT_REFRESH_SECRET, {
+  const { password, ...userData } = user;
+  const refreshToken = jwt.sign(userData, JWT_REFRESH_SECRET, {
     expiresIn: SEVEN_DAYS,
   });
 
@@ -166,8 +169,7 @@ const authenticateToken = async (req: Request, res: Response, next: NextFunction
       return;
     }
 
-    // @ts-expect-error TODO
-    req.user = user as JwtPayload;
+    req.user = user as UserData;
     next();
   });
 };
