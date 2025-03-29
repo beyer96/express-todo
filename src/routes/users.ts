@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { AppDataSource } from "../database";
 import Users from "../entity/users";
+import { clearUsersTokens } from "./auth";
 
 const router = Router();
 const users = AppDataSource.getRepository(Users);
@@ -57,6 +58,7 @@ router.route("/user/:userId")
     }
 
     await user.remove();
+    clearUsersTokens(req, res);
 
     res.sendStatus(204);
   });

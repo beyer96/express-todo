@@ -174,5 +174,23 @@ const authenticateToken = async (req: Request, res: Response, next: NextFunction
   });
 };
 
-export { authenticateToken };
+const clearUsersTokens = (req: Request, res: Response) => {
+  const authHeader = req.headers["authorization"];
+  const accessToken = authHeader && authHeader.split(" ")[1];
+  
+  if (accessToken) {
+    const decoded = jwt.verify(accessToken, JWT_SECRET) as JwtPayload;
+    const expirationTime = decoded.exp! - Math.floor(Date.now() / 1000);
+  
+    accessToken && redis.set(`revokedAccessToken:${accessToken}`, "revoked", "EX", expirationTime)
+  }
+
+  res.clearCookie(REFRESH_TOKEN_COOKIE_NAME, {
+    httpOnly: true,
+    sameSite: "strict",
+    secure: process.env.NODE_ENV === "production"
+  });
+}
+
+export { authenticateToken, clearUsersTokens };
 export default router;
