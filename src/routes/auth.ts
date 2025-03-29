@@ -174,17 +174,19 @@ const authenticateToken = async (req: Request, res: Response, next: NextFunction
   });
 };
 
-const clearUsersTokens = (req: Request, res: Response) => {
+const clearUsersTokens = async (req: Request, res: Response) => {
   const authHeader = req.headers["authorization"];
   const accessToken = authHeader && authHeader.split(" ")[1];
+  const refreshToken = req.cookies[REFRESH_TOKEN_COOKIE_NAME];
   
   if (accessToken) {
     const decoded = jwt.verify(accessToken, JWT_SECRET) as JwtPayload;
     const expirationTime = decoded.exp! - Math.floor(Date.now() / 1000);
   
-    accessToken && redis.set(`revokedAccessToken:${accessToken}`, "revoked", "EX", expirationTime)
+    accessToken && await redis.set(`revokedAccessToken:${accessToken}`, "revoked", "EX", expirationTime);
   }
 
+  await redis.del(`refreshToken:${refreshToken}`);
   res.clearCookie(REFRESH_TOKEN_COOKIE_NAME, {
     httpOnly: true,
     sameSite: "strict",
