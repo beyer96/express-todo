@@ -121,29 +121,7 @@ router.post("/auth/token", async (req, res) => {
 });
 
 router.post("/auth/logout", async (req, res) => {
-  const authHeader = req.headers["authorization"];
-  const accessToken = authHeader && authHeader.split(" ")[1];
-  const refreshToken = req.cookies[REFRESH_TOKEN_COOKIE_NAME];
-  if (!accessToken || !refreshToken) {
-    res.sendStatus(400);
-
-    return;
-  }
-
-  const decoded = jwt.verify(accessToken, JWT_SECRET) as JwtPayload;
-  const expirationTime = decoded.exp! - Math.floor(Date.now() / 1000);
-
-  if (expirationTime > 0) {
-    await redis.set(`revokedAccessToken:${accessToken}`, "revoked", "EX", expirationTime);
-  }
-
-  await redis.del(`refreshToken:${refreshToken}`);
-  res.clearCookie(REFRESH_TOKEN_COOKIE_NAME, {
-    httpOnly: true,
-    sameSite: "strict",
-    secure: process.env.NODE_ENV === "production"
-  });
-
+  await clearUsersTokens(req, res);
   res.sendStatus(204);
 });
 
@@ -178,12 +156,16 @@ const clearUsersTokens = async (req: Request, res: Response) => {
   const authHeader = req.headers["authorization"];
   const accessToken = authHeader && authHeader.split(" ")[1];
   const refreshToken = req.cookies[REFRESH_TOKEN_COOKIE_NAME];
+  if (!accessToken) {
+    res.sendStatus(400);
+    return;
+  }
   
-  if (accessToken) {
-    const decoded = jwt.verify(accessToken, JWT_SECRET) as JwtPayload;
-    const expirationTime = decoded.exp! - Math.floor(Date.now() / 1000);
-  
-    accessToken && await redis.set(`revokedAccessToken:${accessToken}`, "revoked", "EX", expirationTime);
+  const decoded = jwt.verify(accessToken, JWT_SECRET) as JwtPayload;
+  const expirationTime = decoded.exp! - Math.floor(Date.now() / 1000);
+
+  if (expirationTime > 0) {
+    await redis.set(`revokedAccessToken:${accessToken}`, "revoked", "EX", expirationTime);
   }
 
   await redis.del(`refreshToken:${refreshToken}`);
