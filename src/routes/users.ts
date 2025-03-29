@@ -2,6 +2,7 @@ import { Router } from "express";
 import { AppDataSource } from "../database";
 import Users from "../entity/users";
 import { clearUsersTokens } from "./auth";
+import Tasks from "../entity/tasks";
 
 const router = Router();
 const users = AppDataSource.getRepository(Users);
