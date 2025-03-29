@@ -41,7 +41,17 @@ router.post("/auth/signup", async (req, res) => {
     });
 
     await user.save();
-    res.status(201).json({ message: "User created successfully" });
+
+    const accessToken = generateAccessToken(user);
+    const refreshToken = await generateRefreshToken(user);
+
+    res.cookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken, {
+      httpOnly: true,
+      sameSite: "strict",
+      secure: process.env.NODE_ENV === "production"
+    })
+
+    res.status(201).json({ message: "User created successfully", accessToken });
   } catch (error) {
     res.status(500).json({ error: "Internal server error" });
   }
