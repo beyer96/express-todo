@@ -1,8 +1,9 @@
-import { BaseEntity, Column, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { BaseEntity, Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import Users from "./users";
 import Tasks from "./tasks";
 
 
+@Entity()
 export default class Projects extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
@@ -10,7 +11,10 @@ export default class Projects extends BaseEntity {
   @Column()
   title: string;
 
-  @Column()
+  @Column({
+    type: "boolean",
+    default: false
+  })
   is_done: boolean;
 
   @ManyToOne(() => Users, user => user.projects)
