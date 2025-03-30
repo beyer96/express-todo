@@ -6,6 +6,7 @@ import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
 import { AppDataSource } from "./database";
 import usersRouter from "./routes/users";
+import tasksRouter from "./routes/tasks";
 import authRouter, { authenticateToken } from "./routes/auth";
 
 const PORT = process.env.PORT || 3000;
@@ -25,6 +26,7 @@ app.use(authRouter);
 
 app.use(authenticateToken);
 app.use(usersRouter);
+app.use(tasksRouter);
 
 
 app.listen(PORT, () => {
