@@ -1,5 +1,6 @@
 import { BaseEntity, Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import Users from "./users";
+import Projects from "./projects";
 
 @Entity()
 export default class Tasks extends BaseEntity {
@@ -24,4 +25,8 @@ export default class Tasks extends BaseEntity {
   @ManyToOne(() => Users, user => user.tasks)
   @JoinColumn({ name: "user_id" })
   user: Users;
+
+  @ManyToOne(() => Projects, project => project.tasks)
+  @JoinColumn({ name: "project_id" })
+  project: Projects;
 }

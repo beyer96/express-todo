@@ -1,5 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, BaseEntity, OneToMany } from "typeorm";
 import Tasks from "./tasks";
+import Projects from "./projects";
 
 @Entity()
 export default class Users extends BaseEntity {
@@ -23,4 +24,7 @@ export default class Users extends BaseEntity {
 
   @OneToMany(() => Tasks, task => task.user)
   tasks: Tasks[];
+
+  @OneToMany(() => Projects, project => project.user)
+  projects: Projects[];
 }
