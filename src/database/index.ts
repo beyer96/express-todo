@@ -3,6 +3,7 @@ import { glob } from "glob";
 import { DataSource } from "typeorm";
 import Users from "../entity/users";
 import Tasks from "../entity/tasks";
+import Projects from "../entity/projects";
 
 const migrations = glob.sync(path.resolve(__dirname, "./migrations/*.ts"));
 
@@ -13,6 +14,6 @@ export const AppDataSource = new DataSource({
   username: process.env.DB_USERNAME || "express_todo_dev",
   password: process.env.DB_PASSWORD || "express_todo_dev",
   database: process.env.DB_NAME || "express_todo_dev",
-  entities: [Users, Tasks],
+  entities: [Users, Tasks, Projects],
   migrations
 });
