@@ -4,12 +4,7 @@ import Tasks from "../entity/tasks";
 const router = Router();
 
 router.get("/tasks", async (req, res) => {
-  if (!req.user) {
-    res.sendStatus(401);
-    return;
-  }
-
-  const tasks = await Tasks.find({ where: { user: { id: req.user.id } } });
+  const tasks = await Tasks.find({ where: { user: { id: req.user?.id } } });
   
   res.status(200).json(tasks);
 });
@@ -18,15 +13,11 @@ router.post("/task", async (req, res) => {
   const { title, description, isDone } = req.body;
 
   const user = req.user;
-  if (!user) {
-    res.sendStatus(401);
-    return;
-  }
   const task = Tasks.create({
     title,
     description,
     is_done: isDone,
-    user: req.user
+    user
   });
 
   await task.save();
@@ -53,7 +44,7 @@ router.route("/tasks/:taskId")
       res.sendStatus(404);
       return;
     }
-    if (!req.user || req.user.id !== task.user.id) {
+    if (req.user?.id !== task.user.id) {
       res.sendStatus(401);
       return;
     }
@@ -73,7 +64,7 @@ router.route("/tasks/:taskId")
       res.sendStatus(404);
       return;
     }
-    if (!req.user || req.user.id !== task.user.id) {
+    if (req.user?.id !== task.user.id) {
       res.sendStatus(401);
       return;
     }
