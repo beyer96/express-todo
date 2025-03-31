@@ -51,7 +51,7 @@ router.route("/tasks/:taskId")
 
     title && (task.title = title);
     description && (task.description = description);
-    task.is_done = isDone;
+    typeof isDone === "boolean" && (task.is_done = isDone);
 
     await task.save();
 
