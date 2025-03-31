@@ -3,7 +3,7 @@ import jwt, { JwtPayload } from "jsonwebtoken";
 import { Request, Response, NextFunction, Router } from "express";
 import { Redis } from "ioredis";
 import Users from "../entity/users";
-import { UserData } from "../types/auth";
+import { UserData } from "../types/express";
 
 const FIFTEEN_MINUTES = 15 * 60;
 const SEVEN_DAYS = 7 * 24 * 60 * 60;

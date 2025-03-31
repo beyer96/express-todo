@@ -1,7 +1,18 @@
-import { Router } from "express";
+import { Router, Request, Response, NextFunction } from "express";
 import Projects from "../entity/projects";
 
 const router = Router();
+const getProject = async (req: Request, res: Response, next: NextFunction) => {
+  const { projectId } = req.params;
+  const project = await Projects.findOneBy({ id: +projectId, user: { id: req.user?.id }});
+  if (!project) {
+    res.sendStatus(404);
+    return;
+  }
+
+  req.project = project;
+  next();
+}
 
 router.get("/projects", async (req, res) => {
   const projects = await Projects.findBy({ user: { id: req.user?.id }});
@@ -24,24 +35,11 @@ router.post("/project", async (req, res) => {
 });
 
 router.route("/projects/:projectId")
-  .get(async (req, res) => {
-    const { projectId } = req.params;
-    const project = await Projects.findOneBy({ id: +projectId, user: { id: req.user?.id }});
-    if (!project) {
-      res.sendStatus(404);
-      return;
-    }
-
-    res.status(200).json(project);
+  .get(getProject, async (req, res) => {
+    res.status(200).json(req.project);
   })
-  .put(async (req, res) => {
-    const { projectId } = req.params;
-    const project = await Projects.findOneBy({ id: +projectId, user: { id: req.user?.id }});
-    if (!project) {
-      res.sendStatus(404);
-      return;
-    }
-
+  .put(getProject, async (req, res) => {
+    const project = req.project!;
     const { title, isDone } = req.body;
 
     title && (project.title = title);
@@ -51,13 +49,8 @@ router.route("/projects/:projectId")
 
     res.status(200).json(project);
   })
-  .delete(async (req, res) => {
-    const { projectId } = req.params;
-    const project = await Projects.findOneBy({ id: +projectId, user: { id: req.user?.id }});
-    if (!project) {
-      res.sendStatus(404);
-      return;
-    }
+  .delete(getProject, async (req, res) => {
+    const project = req.project!;
 
     await project.remove();
 
