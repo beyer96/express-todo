@@ -1,7 +1,18 @@
-import { Router } from "express";
+import { Router, Request, Response, NextFunction } from "express";
 import Tasks from "../entity/tasks";
 
 const router = Router();
+const getTask = async (req: Request, res: Response, next: NextFunction) => {
+  const { taskId } = req.params;
+  const task = await Tasks.findOneBy({ id: +taskId, user: { id: req.user?.id }});
+  if (!task) {
+    res.sendStatus(404);
+    return;
+  }
+
+  req.task = task;
+  next();
+};
 
 router.get("/tasks", async (req, res) => {
   const tasks = await Tasks.find({ where: { user: { id: req.user?.id } } });
@@ -26,28 +37,12 @@ router.post("/task", async (req, res) => {
 });
   
 router.route("/tasks/:taskId")
-  .get(async (req, res) => {
-    const { taskId } = req.params;
-    const task = await Tasks.findOne({ where: { id: +taskId, user: { id: req.user?.id } } });
-    if (!task) {
-      res.sendStatus(404);
-      return;
-    }
-
-    res.status(200).json(task);
+  .get(getTask, async (req, res) => {
+    res.status(200).json(req.task);
   })
-  .put(async (req, res) => {
-    const { taskId } = req.params;
+  .put(getTask, async (req, res) => {
+    const task = req.task!;
     const { title, description, isDone } = req.body;
-    const task = await Tasks.findOne({ where: { id: +taskId }, relations: ["user"] });
-    if (!task) {
-      res.sendStatus(404);
-      return;
-    }
-    if (req.user?.id !== task.user.id) {
-      res.sendStatus(401);
-      return;
-    }
 
     title && (task.title = title);
     description && (task.description = description);
@@ -57,17 +52,8 @@ router.route("/tasks/:taskId")
 
     res.status(200).json(task);
   })
-  .delete(async (req, res) => {
-    const { taskId } = req.params;
-    const task = await Tasks.findOne({ where: { id: +taskId }, relations: ["user"] });
-    if (!task) {
-      res.sendStatus(404);
-      return;
-    }
-    if (req.user?.id !== task.user.id) {
-      res.sendStatus(401);
-      return;
-    }
+  .delete(getTask, async (req, res) => {
+    const task = req.task!;
 
     await task.remove();
 
