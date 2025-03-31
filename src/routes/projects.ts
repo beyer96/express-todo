@@ -1,5 +1,6 @@
 import { Router, Request, Response, NextFunction } from "express";
 import Projects from "../entity/projects";
+import { validate } from "class-validator";
 
 const router = Router();
 const getProject = async (req: Request, res: Response, next: NextFunction) => {
@@ -29,6 +30,12 @@ router.post("/project", async (req, res) => {
     user: req.user
   });
 
+  const validationErrors = await validate(project, { skipMissingProperties: true });
+  if (validationErrors.length) {
+    res.status(422).json(validationErrors);
+    return;
+  }
+
   await project.save();
 
   res.status(200).json(project);
@@ -43,8 +50,14 @@ router.route("/projects/:projectId")
     const { title, isDone } = req.body;
 
     title && (project.title = title);
-    typeof isDone === "boolean" && (project.is_done = isDone);
+    isDone && (project.is_done = isDone);
     
+    const validationErrors = await validate(project, { skipMissingProperties: true });
+    if (validationErrors.length) {
+      res.status(422).json(validationErrors);
+      return;
+    }
+
     await project.save();
 
     res.status(200).json(project);
