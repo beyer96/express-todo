@@ -4,6 +4,7 @@ import { Request, Response, NextFunction, Router } from "express";
 import { Redis } from "ioredis";
 import Users from "../entity/users";
 import { UserData } from "../types/express";
+import { validate } from "class-validator";
 
 const FIFTEEN_MINUTES = 15 * 60;
 const SEVEN_DAYS = 7 * 24 * 60 * 60;
@@ -42,6 +43,12 @@ router.post("/auth/signup", async (req, res) => {
       password: hashedPassword,
       email,
     });
+
+    const validationErrors = await validate(user);
+    if (validationErrors.length) {
+      res.status(422).json(validationErrors);
+      return;
+    }
 
     await user.save();
 
