@@ -40,7 +40,7 @@ router.post("/auth/signup", async (req, res) => {
       first_name: firstName,
       last_name: lastName,
       username,
-      password: hashedPassword,
+      password,
       email,
     });
 
@@ -49,6 +49,8 @@ router.post("/auth/signup", async (req, res) => {
       res.status(422).json(validationErrors);
       return;
     }
+
+    user.password = hashedPassword;
 
     await user.save();
 
