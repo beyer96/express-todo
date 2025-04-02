@@ -6,8 +6,9 @@ import Users from "../entity/users";
 import { UserData } from "../types/express";
 import { validate } from "class-validator";
 
-const FIFTEEN_MINUTES = 15 * 60;
-const SEVEN_DAYS = 7 * 24 * 60 * 60;
+const FIFTEEN_MINUTES_IN_SECONDS = 15 * 60;
+const SEVEN_DAYS_IN_SECONDS = 7 * 24 * 60 * 60;
+const SEVEN_DAYS_IN_MILISECONDS = SEVEN_DAYS_IN_SECONDS * 1000;
 const JWT_SECRET = process.env.JWT_SECRET!;
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET!;
 const REFRESH_TOKEN_COOKIE_NAME = "express_todo_app_refresh_token";
@@ -17,17 +18,17 @@ const redis = new Redis(process.env.REDIS_URL!);
 const generateAccessToken = (user: Users) => {
   const { password, ...userData } = user;
   return jwt.sign(userData, JWT_SECRET, {
-    expiresIn: FIFTEEN_MINUTES,
+    expiresIn: FIFTEEN_MINUTES_IN_SECONDS,
   });
 };
 
 const generateRefreshToken = async (user: Users) => {
   const { password, ...userData } = user;
   const refreshToken = jwt.sign(userData, JWT_REFRESH_SECRET, {
-    expiresIn: SEVEN_DAYS,
+    expiresIn: SEVEN_DAYS_IN_SECONDS,
   });
 
-  await redis.set(`refreshToken:${refreshToken}`, user.id, "EX", SEVEN_DAYS);
+  await redis.set(`refreshToken:${refreshToken}`, user.id, "EX", SEVEN_DAYS_IN_SECONDS);
 
   return refreshToken;
 };
@@ -60,7 +61,8 @@ router.post("/auth/signup", async (req, res) => {
     res.cookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken, {
       httpOnly: true,
       sameSite: "strict",
-      secure: process.env.NODE_ENV === "production"
+      secure: process.env.NODE_ENV === "production",
+      maxAge: SEVEN_DAYS_IN_MILISECONDS
     })
 
     res.status(201).json({ message: "User created successfully", accessToken });
@@ -92,7 +94,8 @@ router.post("/auth/signin", async (req, res) => {
     res.cookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken, {
       httpOnly: true,
       sameSite: "strict",
-      secure: process.env.NODE_ENV === "production"
+      secure: process.env.NODE_ENV === "production",
+      maxAge: SEVEN_DAYS_IN_MILISECONDS
     });
     res.status(200).json({ accessToken });
   } catch (error) {
@@ -181,7 +184,8 @@ const clearUsersTokens = async (req: Request, res: Response) => {
   res.clearCookie(REFRESH_TOKEN_COOKIE_NAME, {
     httpOnly: true,
     sameSite: "strict",
-    secure: process.env.NODE_ENV === "production"
+    secure: process.env.NODE_ENV === "production",
+    maxAge: SEVEN_DAYS_IN_MILISECONDS
   });
 }
 
