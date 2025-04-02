@@ -10,6 +10,7 @@ declare global {
       user?: UserData;
       project?: Projects;
       task?: Tasks;
+      foundUser?: Users;
     }
   }
 }

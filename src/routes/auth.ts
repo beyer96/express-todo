@@ -5,6 +5,10 @@ import { Redis } from "ioredis";
 import Users from "../entity/users";
 import { UserData } from "../types/express";
 import { validate } from "class-validator";
+import ValidationError from "../errors/ValidationError";
+import NotFoundError from "../errors/NotFoundError";
+import AuthenticationError from "../errors/AuthenticationError";
+import AuthorizationError from "../errors/AuthorizationError";
 
 const FIFTEEN_MINUTES_IN_SECONDS = 15 * 60;
 const SEVEN_DAYS_IN_SECONDS = 7 * 24 * 60 * 60;
@@ -33,7 +37,7 @@ const generateRefreshToken = async (user: Users) => {
   return refreshToken;
 };
 
-router.post("/auth/signup", async (req, res) => {
+router.post("/auth/signup", async (req, res, next) => {
   try {
     const { firstName, lastName, username, email, password } = req.body;
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -47,8 +51,11 @@ router.post("/auth/signup", async (req, res) => {
 
     const validationErrors = await validate(user);
     if (validationErrors.length) {
-      res.status(422).json(validationErrors);
-      return;
+      throw new ValidationError({
+        message: "Validation failed.",
+        statusCode: 422,
+        validationErrors
+      });
     }
 
     user.password = hashedPassword;
@@ -63,29 +70,27 @@ router.post("/auth/signup", async (req, res) => {
       sameSite: "strict",
       secure: process.env.NODE_ENV === "production",
       maxAge: SEVEN_DAYS_IN_MILISECONDS
-    })
+    });
 
-    res.status(201).json({ message: "User created successfully", accessToken });
+    const { password: userPassword, ...userData } = user;
+
+    res.status(201).json({ accessToken, user: userData });
   } catch (error) {
-    res.status(500).json({ error: "Internal server error" });
+    next(error);
   }
 });
 
-router.post("/auth/signin", async (req, res) => {
+router.post("/auth/signin", async (req, res, next) => {
   try {
     const { username, password } = req.body;
     const user = await Users.findOneBy({ username });
     if (!user) {
-      res.sendStatus(404);
-      
-      return
+      throw new NotFoundError({ message: "User was not found.", statusCode: 404 });
     }
 
     const validLogin = await bcrypt.compare(password, user.password);
     if (!validLogin) {
-      res.sendStatus(401);
-
-      return;
+      throw new AuthenticationError({ message: "Invalid user or password.", statusCode: 401 });
     }
 
     const accessToken = generateAccessToken(user);
@@ -99,42 +104,50 @@ router.post("/auth/signin", async (req, res) => {
     });
     res.status(200).json({ accessToken });
   } catch (error) {
-    res.status(500).json({ error: "Internal server error" });
+    next(error);
   }
 });
 
-router.post("/auth/token", async (req, res) => {
-  const refreshToken = req.cookies[REFRESH_TOKEN_COOKIE_NAME];
-  const storedUserId = await redis.get(`refreshToken:${refreshToken}`);
-  if (!refreshToken || !storedUserId) {
-    res.sendStatus(403);
+router.post("/auth/token", async (req, res, next) => {
+  try {
+    const refreshToken = req.cookies[REFRESH_TOKEN_COOKIE_NAME];
+    const storedUserId = await redis.get(`refreshToken:${refreshToken}`);
+    if (!refreshToken || !storedUserId) {
+      throw new AuthorizationError({ message: "Unauthorized request.", statusCode: 401 });
+    }
 
-    return;
-  }
+    jwt.verify(refreshToken, JWT_REFRESH_SECRET, async (err: any, payload: any) => {
+      if (err) {
+        throw new AuthorizationError({ message: "Unauthorized request.", statusCode: 401 });
+      }
 
-  jwt.verify(refreshToken, JWT_REFRESH_SECRET, async (err: any, payload: any) => {
-    if (err) return res.sendStatus(403);
+      const userInDatabase = await Users.findOneBy({ id: payload.id });
+      if (!userInDatabase) throw new AuthorizationError({ message: "Failed to assign token to valid user.", statusCode: 403 });
 
-    const userInDatabase = await Users.findOneBy({ id: payload.id });
-    if (!userInDatabase) return res.sendStatus(403);
+      const newAccessToken = generateAccessToken(userInDatabase);
+      const newRefreshToken = await generateRefreshToken(userInDatabase);
 
-    const newAccessToken = generateAccessToken(userInDatabase);
-    const newRefreshToken = await generateRefreshToken(userInDatabase);
+      await redis.del(`refreshToken:${refreshToken}`);
 
-    await redis.del(`refreshToken:${refreshToken}`);
-
-    res.cookie(REFRESH_TOKEN_COOKIE_NAME, newRefreshToken, {
-      httpOnly: true,
-      sameSite: "strict",
-      secure: process.env.NODE_ENV === "production"
+      res.cookie(REFRESH_TOKEN_COOKIE_NAME, newRefreshToken, {
+        httpOnly: true,
+        sameSite: "strict",
+        secure: process.env.NODE_ENV === "production"
+      });
+      return res.json({ accessToken: newAccessToken });
     });
-    return res.json({ accessToken: newAccessToken });
-  });
+  } catch (error) {
+    next(error);
+  }
 });
 
-router.post("/auth/logout", async (req, res) => {
-  await clearUsersTokens(req, res);
-  res.sendStatus(204);
+router.post("/auth/logout", async (req, res, next) => {
+  try {
+    await clearUsersTokens(req, res);
+    res.sendStatus(204);
+  } catch (error) {
+    next(error);
+  }
 });
 
 const authenticateToken = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -142,21 +155,17 @@ const authenticateToken = async (req: Request, res: Response, next: NextFunction
   const accessToken = authHeader && authHeader.split(" ")[1];
 
   if (!accessToken) {
-    res.status(401).json({ error: "Access Denied: No Token Provided" });
-    return;
+    throw new AuthenticationError({ message: "Access Denied: No Token Provided", statusCode: 401 });
   }
   
   const revokedAccessToken = await redis.get(`revokedAccessToken:${accessToken}`);
   if (revokedAccessToken) {
-    res.status(403).json({ error: "Invalid or Expired Token" });
-
-    return;
+    throw new AuthenticationError({ message: "Invalid token.", statusCode: 403 });
   }
 
   jwt.verify(accessToken, JWT_SECRET as string, (err, user) => {
     if (err) {
-      res.status(403).json({ error: "Invalid or Expired Token" });
-      return;
+      throw new AuthenticationError({ message: "Expired token.", statusCode: 403 });
     }
 
     req.user = user as UserData;
@@ -168,25 +177,28 @@ const clearUsersTokens = async (req: Request, res: Response) => {
   const authHeader = req.headers["authorization"];
   const accessToken = authHeader && authHeader.split(" ")[1];
   const refreshToken = req.cookies[REFRESH_TOKEN_COOKIE_NAME];
-  if (!accessToken) {
-    res.sendStatus(400);
-    return;
+  if (accessToken) {
+    try {
+      const decoded = jwt.verify(accessToken, JWT_SECRET) as JwtPayload;
+      const expirationTime = decoded.exp! - Math.floor(Date.now() / 1000);
+    
+      if (expirationTime > 0) {
+        await redis.set(`revokedAccessToken:${accessToken}`, "revoked", "EX", expirationTime);
+      }
+    } catch {
+      // Do nothing here
+    }
   }
-  
-  const decoded = jwt.verify(accessToken, JWT_SECRET) as JwtPayload;
-  const expirationTime = decoded.exp! - Math.floor(Date.now() / 1000);
 
-  if (expirationTime > 0) {
-    await redis.set(`revokedAccessToken:${accessToken}`, "revoked", "EX", expirationTime);
+  if (refreshToken) {
+    await redis.del(`refreshToken:${refreshToken}`);
+    res.clearCookie(REFRESH_TOKEN_COOKIE_NAME, {
+      httpOnly: true,
+      sameSite: "strict",
+      secure: process.env.NODE_ENV === "production",
+      maxAge: SEVEN_DAYS_IN_MILISECONDS
+    });
   }
-
-  await redis.del(`refreshToken:${refreshToken}`);
-  res.clearCookie(REFRESH_TOKEN_COOKIE_NAME, {
-    httpOnly: true,
-    sameSite: "strict",
-    secure: process.env.NODE_ENV === "production",
-    maxAge: SEVEN_DAYS_IN_MILISECONDS
-  });
 }
 
 export { authenticateToken, clearUsersTokens };

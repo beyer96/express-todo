@@ -9,6 +9,7 @@ import usersRouter from "./routes/users";
 import tasksRouter from "./routes/tasks";
 import projectsRouter from "./routes/projects";
 import authRouter, { authenticateToken } from "./routes/auth";
+import errorHandler from "./middlewares/error-handler";
 
 const PORT = process.env.PORT || 3000;
 const app = express();
@@ -30,6 +31,7 @@ app.use(usersRouter);
 app.use(tasksRouter);
 app.use(projectsRouter);
 
+app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log(`Server is listening on port ${PORT}`);
