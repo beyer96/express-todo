@@ -10,6 +10,7 @@
     "db:create-migration": "typeorm migration:create ./src/database/migrations/$NAME"
   },
   "devDependencies": {
+    "@faker-js/faker": "^9.6.0",
     "@tsconfig/node22": "^22.0.0",
     "@types/bcrypt": "^5.0.2",
     "@types/cookie-parser": "^1.4.8",
