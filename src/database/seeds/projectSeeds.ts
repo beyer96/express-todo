@@ -18,9 +18,7 @@ export default async function seedProjects(faker: Faker) {
 
   async function seedProjectsForUser(user: Users) {
     for (let i = 0; i < PROJECTS_PER_USER_COUNT; i++) {
-      const seed = Math.round(i + (Math.random() * 100));
-      console.log(seed);
-      faker.seed(seed);
+      faker.seed(Math.round(i + (Math.random() * 100)));
   
       const project = createFakeProject(user, faker);
   
