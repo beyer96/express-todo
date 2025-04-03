@@ -1,5 +1,4 @@
 import { Request, Response, NextFunction, Router } from "express";
-import bcrypt from "bcrypt";
 import { AppDataSource } from "../database";
 import Users from "../entity/users";
 import { clearUsersTokens } from "./auth";
@@ -73,11 +72,6 @@ router.route("/user/:userId")
           statusCode: 422,
           validationErrors
         });
-      }
-
-      if (password) {
-        const hashedPassword = await bcrypt.hash(password, 10);
-        hashedPassword && (user.password = hashedPassword);
       }
 
       await user.save();

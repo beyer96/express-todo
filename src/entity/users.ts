@@ -1,10 +1,18 @@
-import { Entity, PrimaryGeneratedColumn, Column, BaseEntity, OneToMany } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, BaseEntity, OneToMany, BeforeInsert } from "typeorm";
+import bcrypt from "bcrypt";
 import Tasks from "./tasks";
 import Projects from "./projects";
 import { IsString, IsEmail, MinLength, Matches } from "class-validator";
 
 @Entity()
 export default class Users extends BaseEntity {
+  @BeforeInsert()
+  async hashPassword() {
+    const hashedPassword = await bcrypt.hash(this.password, 10);
+
+    hashedPassword && (this.password = hashedPassword);
+  }
+
   @PrimaryGeneratedColumn()
   id: number;
 

@@ -40,7 +40,6 @@ const generateRefreshToken = async (user: Users) => {
 router.post("/auth/signup", async (req, res, next) => {
   try {
     const { firstName, lastName, username, email, password } = req.body;
-    const hashedPassword = await bcrypt.hash(password, 10);
     const user = Users.create({
       first_name: firstName,
       last_name: lastName,
@@ -57,8 +56,6 @@ router.post("/auth/signup", async (req, res, next) => {
         validationErrors
       });
     }
-
-    user.password = hashedPassword;
 
     await user.save();
 
