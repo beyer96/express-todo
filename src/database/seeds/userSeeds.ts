@@ -6,6 +6,17 @@ export default async function seedUsers(faker: Faker) {
 
   try {
     process.stdout.write("Seeding users...");
+
+    const mainTestingUser = Users.create({
+      first_name: "John",
+      last_name: "Doe",
+      username: "test",
+      password: "12345678",
+      email: "john.doe@express-todo.com"
+    });
+
+    await mainTestingUser.save();
+
     for (let i = 0; i < SEED_COUNT; i++) {
       faker.seed(i);
 
