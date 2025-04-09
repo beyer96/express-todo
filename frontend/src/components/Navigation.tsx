@@ -8,7 +8,7 @@ export default function Navigation() {
           <NavLink to="/">Home</NavLink>
         </li>
         <li>
-          <NavLink to="/auth">Login</NavLink>
+          <NavLink to="/login">Login</NavLink>
         </li>
       </ul>
     </nav>
