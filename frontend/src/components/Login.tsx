@@ -1,26 +1,29 @@
-import { FormEvent, useState } from "react";
+import { useNavigate } from "react-router";
+import axiosInstance from "../axios";
+import { LOCAL_STORAGE_ACCESS_TOKEN_KEY } from "../utils";
 
 export default function Login() {
-  const [credentials, setCredentials] = useState({});
+  const navigate = useNavigate();
 
-  function handleLogin() {
-    console.log(credentials);
-  }
+  async function handleLogin(formData: FormData) {
+    try {
+      const response = await axiosInstance.post("/auth/signin", {
+        username: formData.get("username"),
+        password: formData.get("password")
+      });
+      const { accessToken } = response.data;
 
-  function handleInput(event: FormEvent) {
-    const input = event.currentTarget as HTMLInputElement;
-    const { name, value } = input;
-
-    setCredentials(prev => ({
-      ...prev,
-      [name]: value
-    }));
+      localStorage.setItem(LOCAL_STORAGE_ACCESS_TOKEN_KEY, accessToken);
+      navigate("/");      
+    } catch (error) {
+      console.error((error as Error).message);
+    }
   }
 
   return (
     <form action={handleLogin}>
-      <input type="text" name="username" id="username" onInput={handleInput} />
-      <input type="password" name="password" id="password" onInput={handleInput} />
+      <input type="text" name="username" id="username" />
+      <input type="password" name="password" id="password" />
       <button type="submit">Login</button>
     </form>
   )
