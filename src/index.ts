@@ -4,6 +4,7 @@ import express from "express";
 import morgan from "morgan";
 import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
+import cors from "cors";
 import { AppDataSource } from "./database";
 import usersRouter from "./routes/users";
 import tasksRouter from "./routes/tasks";
@@ -23,6 +24,7 @@ AppDataSource.initialize()
 app.use(morgan(process.env.NODE_ENV == "development" ? "dev" : "short"));
 app.use(bodyParser.json());
 app.use(cookieParser());
+app.use(cors({ origin: "http://localhost:5173" }));
 
 app.use(authRouter);
 
