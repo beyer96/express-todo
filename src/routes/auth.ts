@@ -124,6 +124,7 @@ router.post("/auth/token", async (req, res, next) => {
 
       const newAccessToken = generateAccessToken(userInDatabase);
       const newRefreshToken = await generateRefreshToken(userInDatabase);
+      const { password, ...userData } = userInDatabase;
 
       await redis.del(`refreshToken:${refreshToken}`);
 
@@ -132,7 +133,7 @@ router.post("/auth/token", async (req, res, next) => {
         sameSite: "strict",
         secure: process.env.NODE_ENV === "production"
       });
-      return res.json({ accessToken: newAccessToken });
+      return res.json({ accessToken: newAccessToken, user: userData });
     });
   } catch (error) {
     next(error);
