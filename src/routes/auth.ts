@@ -111,7 +111,8 @@ router.post("/auth/token", async (req, res, next) => {
     const refreshToken = req.cookies[REFRESH_TOKEN_COOKIE_NAME];
     const storedUserId = await redis.get(`refreshToken:${refreshToken}`);
     if (!refreshToken || !storedUserId) {
-      throw new AuthorizationError({ message: "Unauthorized request.", statusCode: 401 });
+      res.status(204).end();
+      return;
     }
 
     jwt.verify(refreshToken, JWT_REFRESH_SECRET, async (err: any, payload: any) => {
