@@ -1,3 +1,5 @@
+@use "sass:color";
+
 nav {
   padding: 16px 70px;
   background-color: $periwinkle;
@@ -12,8 +14,8 @@ nav {
       text-decoration: none;
       font-size: 1.1rem;
 
-      &:hover {
-        font-weight: 500;
+      &:not(.active):hover {
+        color: color.adjust($gunmetal, $lightness: 20%);
       }
 
       &.active {
