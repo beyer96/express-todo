@@ -5,13 +5,14 @@ import { IconContext } from "react-icons/lib";
 
 export default function Home() {
   const user = useAppSelector(state => state.user);
+  const tasks = useAppSelector(state => state.tasks);
 
   if (user.username) {
     return (
       <>
         <h1 className="text-center mt-5">Welcome, {user.username}!</h1>
         <div className="d-flex justify-content-center my-5 gap-5">
-          <Stat title="Tasks to be done" value={15}>
+          <Stat title="Tasks to be done" value={tasks.length}>
             <IconContext.Provider value={{ size: "6rem" }}>
               <LuListTodo />
             </IconContext.Provider>

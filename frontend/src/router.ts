@@ -3,6 +3,7 @@ import DefaultLayout from "./layouts/DefaultLayout";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+import Tasks from "./pages/Tasks";
 
 const router = createBrowserRouter([
   {
@@ -19,6 +20,10 @@ const router = createBrowserRouter([
       {
         path: "/signup",
         Component: Signup
+      },
+      {
+        path: "/tasks",
+        Component: Tasks
       }
     ]
   }

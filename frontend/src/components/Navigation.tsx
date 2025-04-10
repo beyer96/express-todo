@@ -23,6 +23,9 @@ export default function Navigation() {
         <li>
           <NavLink to="/">Home</NavLink>
         </li>
+        <li>
+          <NavLink to="/tasks">Tasks</NavLink>
+        </li>
         {user.username
           ? (
             <li>
