@@ -2,3 +2,43 @@
   width: 100%;
   padding-inline: 10rem;
 }
+
+.d {
+  &-flex {
+    display: flex;
+  }
+}
+
+.justify-content {
+  &-center {
+    justify-content: center;
+  }
+}
+
+@each $size, $value in $spacing-map {
+  .m-#{$size} {
+    margin: $value;
+  }
+
+  .my-#{$size} {
+    margin-block: $value;
+  }
+
+  .mx-#{$size} {
+    margin-inline: $value;
+  }
+
+  .mt-#{$size} {
+    margin-top: $value;
+  }
+
+  .gap-#{$size} {
+    gap: $value;
+  }
+}
+
+.text {
+  &-center {
+    text-align: center;
+  }
+}

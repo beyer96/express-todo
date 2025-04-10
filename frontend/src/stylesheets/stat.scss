@@ -1,0 +1,22 @@
+@use "sass:color";
+
+.stat {
+  @extend .my-5;
+
+  max-width: 400px;
+  padding: 2rem;
+  border: 5px solid $gunmetal;
+  border-radius: 0.5rem;
+  font-weight: 700;
+  flex: 1 0 auto;
+
+  &-value {
+    font-size: 6rem;
+    line-height: 1;
+  }
+
+  &-title {
+    font-size: 1.5rem;
+    color: color.adjust($gunmetal, $lightness: 40%);
+  }
+}
