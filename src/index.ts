@@ -24,7 +24,7 @@ AppDataSource.initialize()
 app.use(morgan(process.env.NODE_ENV == "development" ? "dev" : "short"));
 app.use(bodyParser.json());
 app.use(cookieParser());
-app.use(cors({ origin: "http://localhost:5173" }));
+app.use(cors({ origin: process.env.FRONTEND_BASE_URL }));
 
 app.use(authRouter);
 
