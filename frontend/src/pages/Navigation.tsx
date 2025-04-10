@@ -1,8 +1,8 @@
 import { NavLink } from "react-router";
-import { useAppDispatch, useAppSelector } from "../store";
-import axiosInstance from "../axios";
-import { LOCAL_STORAGE_ACCESS_TOKEN_KEY } from "../utils";
-import { unsetUser } from "../store/userSlice";
+import { useAppDispatch, useAppSelector } from "../store/index.js";
+import axiosInstance from "../axios.js";
+import { LOCAL_STORAGE_ACCESS_TOKEN_KEY } from "../utils.js";
+import { unsetUser } from "../store/userSlice.js";
 
 export default function Navigation() {
   const user = useAppSelector(state => state.user);

@@ -1,8 +1,8 @@
 import { useNavigate } from "react-router";
-import axiosInstance from "../axios";
-import { LOCAL_STORAGE_ACCESS_TOKEN_KEY } from "../utils";
-import { setUser } from "../store/userSlice";
-import { useAppDispatch } from "../store";
+import axiosInstance from "../axios.js";
+import { LOCAL_STORAGE_ACCESS_TOKEN_KEY } from "../utils.js";
+import { setUser } from "../store/userSlice.js";
+import { useAppDispatch } from "../store/index.js";
 
 export default function Login() {
   const navigate = useNavigate();
