@@ -1,8 +1,8 @@
-import { useSelector } from "react-redux";
 import { NavLink } from "react-router";
+import { useAppSelector } from "../store";
 
 export default function Navigation() {
-  const user = useSelector(state => state.user);
+  const user = useAppSelector(state => state.user);
 
   return (
     <nav>

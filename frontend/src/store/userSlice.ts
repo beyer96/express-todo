@@ -5,11 +5,17 @@ interface UserState {
   lastName: string;
   email: string;
   username: string;
+  somethingnew: string;
 }
 
 const userSlice = createSlice({
   name: "user",
-  initialState: {},
+  initialState: {
+    firstName: "",
+    lastName: "",
+    email: "",
+    username: "",
+  } as UserState,
   reducers: {
     setUser: (_, action: PayloadAction<UserState>): UserState => {
       return action.payload;
