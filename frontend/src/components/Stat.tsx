@@ -1,21 +1,20 @@
+import { ReactNode } from "react"
+
 export default function Stat({
   value,
   title,
-  watermark
+  children
 }: {
   value: number,
   title: string,
-  watermark?: {
-    src: string;
-    alt: string;
-  }
+  children?: ReactNode
 }) {
 
   return (
     <div className="stat">
       <span className="stat-value">{value}</span>
       <p className="stat-title">{title}</p>
-      {watermark?.src && <img src={watermark?.src} alt={watermark?.alt} className="stat-watermark" />}
+      {children}
     </div>
   )
 }
