@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Outlet } from "react-router";
-import Navigation from "../pages/Navigation";
+import Navigation from "../components/Navigation";
 import { restoreUserSession } from "../services/authService";
 import { useAppDispatch } from "../store";
 import { setUser } from "../store/userSlice";
