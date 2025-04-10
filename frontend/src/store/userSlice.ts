@@ -5,7 +5,6 @@ interface UserState {
   lastName: string;
   email: string;
   username: string;
-  somethingnew: string;
 }
 
 const userSlice = createSlice({
