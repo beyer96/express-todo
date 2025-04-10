@@ -1,17 +1,25 @@
 import axiosInstance from "../axios";
 import { LOCAL_STORAGE_ACCESS_TOKEN_KEY } from "../utils";
 
+export interface UserData {
+  firstName: string;
+  lastName: string;
+  username: string;
+  password: string;
+  email: string;
+}
+
 export const restoreUserSession = async () => {
-  const accessToken = localStorage.getItem(LOCAL_STORAGE_ACCESS_TOKEN_KEY);
-  if (accessToken) {
+  try {
+    const accessToken = localStorage.getItem(LOCAL_STORAGE_ACCESS_TOKEN_KEY);
     const response = await axiosInstance.get("/auth/session", {
       headers: {
         "Authorization": `Bearer ${accessToken}`
       }
     });
 
-    return response.data.user;
-  } else {
+    if (response.status === 200) return response.data.user;
+  } catch {
     return await refreshToken();
   }
 };
@@ -24,5 +32,15 @@ export const refreshToken = async () => {
     localStorage.setItem(LOCAL_STORAGE_ACCESS_TOKEN_KEY, accessToken);
   }
   
+  return user;
+};
+
+export const registerNewUser = async (userData: UserData) => {
+  const response = await axiosInstance.post("/auth/signup", userData);
+  const { user, accessToken } = response.data;
+  if (!user || !accessToken) throw new Error("Missing data in response");
+
+  localStorage.setItem(LOCAL_STORAGE_ACCESS_TOKEN_KEY, accessToken);
+
   return user;
 };

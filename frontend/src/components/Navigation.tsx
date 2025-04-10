@@ -31,9 +31,10 @@ export default function Navigation() {
             </li>
           )
           : (
-          <li>
-            <NavLink to="/login">Login</NavLink>
-          </li>
+            <li>
+              <NavLink to="/login">Login</NavLink>
+              <NavLink to="/signup">Sign up</NavLink>
+            </li>
           )
         }
       </ul>

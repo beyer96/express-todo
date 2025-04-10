@@ -19,7 +19,9 @@ export default function DefaultLayout() {
   return (
     <>
       <Navigation />
-      <Outlet />
+      <main className="container">
+        <Outlet />
+      </main>
     </>
   )
 }
