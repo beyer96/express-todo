@@ -7,20 +7,25 @@ interface UserState {
   username: string;
 }
 
+const initialState = {
+  firstName: "",
+  lastName: "",
+  email: "",
+  username: "",
+};
+
 const userSlice = createSlice({
   name: "user",
-  initialState: {
-    firstName: "",
-    lastName: "",
-    email: "",
-    username: "",
-  } as UserState,
+  initialState,
   reducers: {
     setUser: (_, action: PayloadAction<UserState>): UserState => {
       return action.payload;
+    },
+    unsetUser: () => {
+      return initialState;
     }
   }
 });
 
-export const { setUser } = userSlice.actions;
+export const { setUser, unsetUser } = userSlice.actions;
 export default userSlice.reducer;

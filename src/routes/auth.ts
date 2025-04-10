@@ -37,6 +37,59 @@ const generateRefreshToken = async (user: Users) => {
   return refreshToken;
 };
 
+
+
+const authenticateToken = async (req: Request, res: Response, next: NextFunction) => {
+  const authHeader = req.headers["authorization"];
+  const accessToken = authHeader && authHeader.split(" ")[1];
+
+  if (!accessToken) {
+    throw new AuthenticationError({ message: "Access Denied: No Token Provided", statusCode: 401 });
+  }
+  
+  const revokedAccessToken = await redis.get(`revokedAccessToken:${accessToken}`);
+  if (revokedAccessToken) {
+    throw new AuthenticationError({ message: "Invalid token.", statusCode: 403 });
+  }
+
+  jwt.verify(accessToken, JWT_SECRET as string, (err, user) => {
+    if (err) {
+      throw new AuthenticationError({ message: "Expired token.", statusCode: 403 });
+    }
+
+    req.user = user as UserData;
+    next();
+  });
+};
+
+const clearUsersTokens = async (req: Request, res: Response) => {
+  const authHeader = req.headers["authorization"];
+  const accessToken = authHeader && authHeader.split(" ")[1];
+  const refreshToken = req.cookies[REFRESH_TOKEN_COOKIE_NAME];
+  if (accessToken) {
+    try {
+      const decoded = jwt.verify(accessToken, JWT_SECRET) as JwtPayload;
+      const expirationTime = decoded.exp! - Math.floor(Date.now() / 1000);
+    
+      if (expirationTime > 0) {
+        await redis.set(`revokedAccessToken:${accessToken}`, "revoked", "EX", expirationTime);
+      }
+    } catch {
+      // Do nothing here
+    }
+  }
+
+  if (refreshToken) {
+    await redis.del(`refreshToken:${refreshToken}`);
+    res.clearCookie(REFRESH_TOKEN_COOKIE_NAME, {
+      httpOnly: true,
+      sameSite: "strict",
+      secure: process.env.NODE_ENV === "production",
+      maxAge: SEVEN_DAYS_IN_MILISECONDS
+    });
+  }
+}
+
 router.post("/auth/signup", async (req, res, next) => {
   try {
     const { firstName, lastName, username, email, password } = req.body;
@@ -106,6 +159,10 @@ router.post("/auth/signin", async (req, res, next) => {
   }
 });
 
+router.get("/auth/session", authenticateToken, (req, res) => {
+  res.status(200).send({ user: req.user });
+});
+
 router.post("/auth/token", async (req, res, next) => {
   try {
     const refreshToken = req.cookies[REFRESH_TOKEN_COOKIE_NAME];
@@ -149,57 +206,6 @@ router.post("/auth/logout", async (req, res, next) => {
     next(error);
   }
 });
-
-const authenticateToken = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  const authHeader = req.headers["authorization"];
-  const accessToken = authHeader && authHeader.split(" ")[1];
-
-  if (!accessToken) {
-    throw new AuthenticationError({ message: "Access Denied: No Token Provided", statusCode: 401 });
-  }
-  
-  const revokedAccessToken = await redis.get(`revokedAccessToken:${accessToken}`);
-  if (revokedAccessToken) {
-    throw new AuthenticationError({ message: "Invalid token.", statusCode: 403 });
-  }
-
-  jwt.verify(accessToken, JWT_SECRET as string, (err, user) => {
-    if (err) {
-      throw new AuthenticationError({ message: "Expired token.", statusCode: 403 });
-    }
-
-    req.user = user as UserData;
-    next();
-  });
-};
-
-const clearUsersTokens = async (req: Request, res: Response) => {
-  const authHeader = req.headers["authorization"];
-  const accessToken = authHeader && authHeader.split(" ")[1];
-  const refreshToken = req.cookies[REFRESH_TOKEN_COOKIE_NAME];
-  if (accessToken) {
-    try {
-      const decoded = jwt.verify(accessToken, JWT_SECRET) as JwtPayload;
-      const expirationTime = decoded.exp! - Math.floor(Date.now() / 1000);
-    
-      if (expirationTime > 0) {
-        await redis.set(`revokedAccessToken:${accessToken}`, "revoked", "EX", expirationTime);
-      }
-    } catch {
-      // Do nothing here
-    }
-  }
-
-  if (refreshToken) {
-    await redis.del(`refreshToken:${refreshToken}`);
-    res.clearCookie(REFRESH_TOKEN_COOKIE_NAME, {
-      httpOnly: true,
-      sameSite: "strict",
-      secure: process.env.NODE_ENV === "production",
-      maxAge: SEVEN_DAYS_IN_MILISECONDS
-    });
-  }
-}
 
 export { authenticateToken, clearUsersTokens };
 export default router;
