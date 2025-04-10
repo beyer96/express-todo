@@ -92,6 +92,7 @@ router.post("/auth/signin", async (req, res, next) => {
 
     const accessToken = generateAccessToken(user);
     const refreshToken = await generateRefreshToken(user);
+    const { password: userPassword, ...userData } = user;
 
     res.cookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken, {
       httpOnly: true,
@@ -99,7 +100,7 @@ router.post("/auth/signin", async (req, res, next) => {
       secure: process.env.NODE_ENV === "production",
       maxAge: SEVEN_DAYS_IN_MILISECONDS
     });
-    res.status(200).json({ accessToken });
+    res.status(200).json({ accessToken, user: userData });
   } catch (error) {
     next(error);
   }
