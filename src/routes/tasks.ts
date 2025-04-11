@@ -23,7 +23,7 @@ const getTask = async (req: Request, res: Response, next: NextFunction) => {
 router.get("/tasks", async (req, res, next) => {
   try {
     const tasks = await Tasks.find({ where: { user: { id: req.user?.id } } });
-  console.log(tasks);
+
     res.status(200).json(tasks);
   } catch (error) {
     next(error);
