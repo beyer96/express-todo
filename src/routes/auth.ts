@@ -49,12 +49,12 @@ const authenticateToken = async (req: Request, res: Response, next: NextFunction
   
   const revokedAccessToken = await redis.get(`revokedAccessToken:${accessToken}`);
   if (revokedAccessToken) {
-    throw new AuthenticationError({ message: "Invalid token.", statusCode: 403 });
+    throw new AuthenticationError({ message: "Invalid token.", statusCode: 401 });
   }
 
   jwt.verify(accessToken, JWT_SECRET as string, (err, user) => {
     if (err) {
-      throw new AuthenticationError({ message: "Expired token.", statusCode: 403 });
+      throw new AuthenticationError({ message: "Expired token.", statusCode: 401 });
     }
 
     req.user = user as UserData;
