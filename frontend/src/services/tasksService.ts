@@ -8,6 +8,12 @@ export default class TasksService {
     return response.data;
   }
 
+  static async createTask(task: Task) {
+    const response = await axiosInstance.post("/task", task);
+
+    return response.data;
+  }
+
   static async updateTask(taskId: number, data: Partial<Task>) {
     const response = await axiosInstance.put(`/tasks/${taskId}`, data);
 

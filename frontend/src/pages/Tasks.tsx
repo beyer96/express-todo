@@ -3,6 +3,7 @@ import { useAppDispatch, useAppSelector } from "../store"
 import TasksService from "../services/tasksService";
 import { setTasks } from "../store/tasksSlice";
 import Task from "../components/Task";
+import { Link } from "react-router";
 
 export default function Tasks() {
   const dispatch = useAppDispatch();
@@ -21,7 +22,10 @@ export default function Tasks() {
 
   return (
     <>
-      <h1>Tasks</h1>
+      <div className="d-flex justify-content-between align-items-center">
+        <h1>Tasks</h1>
+        <Link to="/tasks/new" className="btn btn-primary">Create new task</Link>
+      </div>
       {tasks.map(task => (
         <Task key={task.id} task={task} />
       ))}

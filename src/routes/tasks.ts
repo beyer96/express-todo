@@ -52,6 +52,7 @@ router.post("/task", async (req, res, next) => {
 
     await task.save();
 
+    console.log(task);
     res.status(200).json(task);
   } catch (error) {
     next(error);

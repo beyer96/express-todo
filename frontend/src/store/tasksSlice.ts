@@ -5,6 +5,7 @@ export interface Task {
   title: string;
   description?: string;
   is_done: boolean;
+  user_id?: number;
 }
 
 const initialState: Task[] = [];
