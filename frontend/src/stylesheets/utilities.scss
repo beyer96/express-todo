@@ -48,6 +48,10 @@
     margin-top: $value;
   }
 
+  .ms-#{$size} {
+    margin-left: $value;
+  }
+
   .gap-#{$size} {
     gap: $value;
   }
@@ -61,7 +65,7 @@
 
 .btn {
   color: $whitesmoke;
-  padding: 0.5rem 0.25rem;
+  padding: 0.25rem 0.5rem;
   border: 2px solid $gunmetal;
   border-radius: 0.5rem;
   text-decoration: none;

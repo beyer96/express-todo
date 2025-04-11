@@ -1,4 +1,5 @@
 import { NavLink, useNavigate } from "react-router";
+import { LuUser } from "react-icons/lu";
 import { useAppDispatch, useAppSelector } from "../store/index.js";
 import axiosInstance from "../axios.js";
 import { LOCAL_STORAGE_ACCESS_TOKEN_KEY } from "../utils.js";
@@ -29,21 +30,33 @@ export default function Navigation() {
         </li>
         {user.username
           ? (
-            <>
-              <li>
+            <li>
               <NavLink to="/tasks">Tasks</NavLink>
             </li>
+          ) : null}
+      </ul>
+      <ul>
+        {user.username
+          ? (
+            <>
               <li>
-                {user.username}
+                <LuUser />
+                <span className="ms-1">{user.username}</span>
+              </li>
+              <li>
                 <button type="button" className="logout" onClick={handleLogout}>Log out</button>
               </li>
             </>
           )
           : (
+          <>
             <li>
               <NavLink to="/login">Login</NavLink>
+            </li>
+            <li>
               <NavLink to="/signup">Sign up</NavLink>
             </li>
+          </>
           )
         }
       </ul>
