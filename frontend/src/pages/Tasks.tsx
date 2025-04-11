@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "../store"
-import { getTasks } from "../services/tasksService";
+import TasksService from "../services/tasksService";
 import { setTasks } from "../store/tasksSlice";
 import Task from "../components/Task";
 
@@ -13,7 +13,7 @@ export default function Tasks() {
     if (!user.username) return;
 
     (async () => {
-      const tasks = await getTasks();
+      const tasks = await TasksService.getTasks();
   
       dispatch(setTasks(tasks));
     })();

@@ -1,7 +1,7 @@
 import { LuCheck, LuTrash } from "react-icons/lu";
-import { Task as ITask, updateTask } from "../store/tasksSlice";
 import { FormEvent, useRef, useState } from "react";
-import axiosInstance from "../axios";
+import TasksService from "../services/tasksService";
+import { Task as ITask, updateTask } from "../store/tasksSlice";
 import { useAppDispatch } from "../store";
 
 export default function Task({ task }: { task: ITask }) {
@@ -34,10 +34,9 @@ export default function Task({ task }: { task: ITask }) {
       setDescriptionEditable(false);
     } else if (pressedKey === "Enter") {
       try {
-        const response = await axiosInstance.put(`/tasks/${task.id}`, {
+        const updatedTask = await TasksService.updateTask(task.id, {
           description: descriptionInput.current?.value
-        });
-        const updatedTask = response.data;
+        })
 
         dispatch(updateTask(updatedTask));
         setDescriptionEditable(false);
@@ -54,10 +53,9 @@ export default function Task({ task }: { task: ITask }) {
       setTitleEditable(false);
     } else if (pressedKey === "Enter") {
       try {
-        const response = await axiosInstance.put(`/tasks/${task.id}`, {
+        const updatedTask = await TasksService.updateTask(task.id, {
           title: titleInput.current?.value
         });
-        const updatedTask = response.data;
 
         dispatch(updateTask(updatedTask));
         setTitleEditable(false);
