@@ -11,19 +11,41 @@ export default function Task({ task }: { task: ITask }) {
   const titleInput = useRef<HTMLInputElement>(null);
   const descriptionInput = useRef<HTMLInputElement>(null);
 
-  const makeDescriptionEditable = () => {
-    setDescriptionEditable(true);
+  const closeEditOnOutsideClick = (
+    event: MouseEvent,
+    targetInput: HTMLInputElement,
+    setInputEditable: (state: boolean) => void
+  ) => {
+    if (event.target === targetInput) return;
 
+    setInputEditable(false);
+  };
+
+  const makeDescriptionEditable = () => {
+    const outsideClickHandler = (event: MouseEvent) => {
+      closeEditOnOutsideClick(event, descriptionInput.current as HTMLInputElement, setDescriptionEditable);
+
+      document.removeEventListener("click", outsideClickHandler);
+    };
+
+    setDescriptionEditable(true);
     requestAnimationFrame(() => {
       descriptionInput.current?.focus();
+      document.addEventListener("click", outsideClickHandler);
     });
   }
 
   const makeTitleEditable = () => {
-    setTitleEditable(true);
+    const outsideClickHandler = (event: MouseEvent) => {
+      closeEditOnOutsideClick(event, titleInput.current as HTMLInputElement, setTitleEditable);
 
+      document.removeEventListener("click", outsideClickHandler);
+    }
+
+    setTitleEditable(true);
     requestAnimationFrame(() => {
       titleInput.current?.focus();
+      document.addEventListener("click", outsideClickHandler);
     });
   }
 
