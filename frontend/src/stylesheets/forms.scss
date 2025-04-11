@@ -1,13 +1,10 @@
+form {
+  max-width: 400px;
+  margin: 2rem auto;
+}
+
 .input-group {
   display: flex;
   flex-direction: column;
   margin-bottom: 1rem;
-}
-
-.form {
-  &-login,
-  &-signup {
-    max-width: 400px;
-    margin: 2rem auto;
-  }
 }

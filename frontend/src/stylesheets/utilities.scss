@@ -58,3 +58,20 @@
     text-align: center;
   }
 }
+
+.btn {
+  color: $whitesmoke;
+  padding: 0.5rem 0.25rem;
+  border: 2px solid $gunmetal;
+  border-radius: 0.5rem;
+  text-decoration: none;
+
+  &-primary {
+    background-color: $medium-slate-blue;
+
+    &:hover {
+      transition: 300ms;
+      background-color: color.adjust($medium-slate-blue, $lightness: 5%);
+    }
+  }
+}
