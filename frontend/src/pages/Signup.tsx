@@ -52,7 +52,7 @@ export default function Signup() {
         <input type="password" id="confirmPassword" />
       </div>
 
-      <button type="submit">Register</button>
+      <button className="btn" type="submit">Register</button>
     </form>
   )
 }

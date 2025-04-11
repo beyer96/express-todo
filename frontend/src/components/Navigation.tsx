@@ -44,7 +44,7 @@ export default function Navigation() {
                 <span className="ms-1">{user.username}</span>
               </li>
               <li>
-                <button type="button" className="logout" onClick={handleLogout}>Log out</button>
+                <button type="button" className="btn" onClick={handleLogout}>Log out</button>
               </li>
             </>
           )

@@ -64,13 +64,13 @@
 }
 
 .btn {
-  color: $whitesmoke;
   padding: 0.25rem 0.5rem;
   border: 2px solid $gunmetal;
   border-radius: 0.5rem;
   text-decoration: none;
 
   &-primary {
+    color: $whitesmoke;
     background-color: $medium-slate-blue;
 
     &:hover {
