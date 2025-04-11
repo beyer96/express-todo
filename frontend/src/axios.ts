@@ -16,15 +16,16 @@ axiosInstance.interceptors.request.use(config => {
 axiosInstance.interceptors.response.use(
   response => response,
   async (error) => {
-    if (error.status === 401) {
+    const originalRequest = error.config;
+
+    if (error.status === 401 && !originalRequest._retry) {
       try {
-        const originalRequest = error.config;
         const response = await axiosInstance.post("/auth/token");
 
         localStorage.setItem(LOCAL_STORAGE_ACCESS_TOKEN_KEY, response.data.accessToken);
 
         originalRequest.headers.Authorization = `Bearer ${response.data.accessToken}`;
-        // originalRequest._retry = true;
+        originalRequest._retry = true;
 
         return axiosInstance(originalRequest);
       } catch {
