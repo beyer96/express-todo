@@ -1,4 +1,4 @@
-import { NavLink } from "react-router";
+import { NavLink, useNavigate } from "react-router";
 import { useAppDispatch, useAppSelector } from "../store/index.js";
 import axiosInstance from "../axios.js";
 import { LOCAL_STORAGE_ACCESS_TOKEN_KEY } from "../utils.js";
@@ -6,6 +6,7 @@ import { unsetUser } from "../store/userSlice.js";
 import { resetTasks } from "../store/tasksSlice.js";
 
 export default function Navigation() {
+  const navigate = useNavigate();
   const user = useAppSelector(state => state.user);
   const dispatch = useAppDispatch();
 
@@ -16,6 +17,7 @@ export default function Navigation() {
       localStorage.removeItem(LOCAL_STORAGE_ACCESS_TOKEN_KEY);
       dispatch(unsetUser())
       dispatch(resetTasks());
+      navigate("/");
     }
   };
 
