@@ -6,7 +6,9 @@ import { useAppDispatch } from "../store";
 
 export default function Task({ task }: { task: ITask }) {
   const dispatch = useAppDispatch();
+  const [titleEditable, setTitleEditable] = useState(false);
   const [descriptionEditable, setDescriptionEditable] = useState(false);
+  const titleInput = useRef<HTMLInputElement>(null);
   const descriptionInput = useRef<HTMLInputElement>(null);
 
   const makeDescriptionEditable = () => {
@@ -14,6 +16,14 @@ export default function Task({ task }: { task: ITask }) {
 
     requestAnimationFrame(() => {
       descriptionInput.current?.focus();
+    });
+  }
+
+  const makeTitleEditable = () => {
+    setTitleEditable(true);
+
+    requestAnimationFrame(() => {
+      titleInput.current?.focus();
     });
   }
 
@@ -37,10 +47,34 @@ export default function Task({ task }: { task: ITask }) {
     }
   }
 
+  const handleTitleInput = async (event: FormEvent) => {
+    const pressedKey = (event.nativeEvent as KeyboardEvent).key;
+
+    if (pressedKey === "Escape") {
+      setTitleEditable(false);
+    } else if (pressedKey === "Enter") {
+      try {
+        const response = await axiosInstance.put(`/tasks/${task.id}`, {
+          title: titleInput.current?.value
+        });
+        const updatedTask = response.data;
+
+        dispatch(updateTask(updatedTask));
+        setTitleEditable(false);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  }
+
   return (
     <div className="task d-flex justify-content-between align-items-center">
       <div className="d-flex flex-column">
-        <p className="task-title">{task.title}</p>
+        {
+          titleEditable
+            ? <input type="text" onKeyDown={handleTitleInput} ref={titleInput} className="task-title" defaultValue={task.title} />
+            : <p onClick={makeTitleEditable} className="task-title">{task.title}</p>
+        }
         {
           descriptionEditable
             ? <input onKeyDown={handleDescriptionInput} ref={descriptionInput} className="task-description" type="text" defaultValue={task.description} />
