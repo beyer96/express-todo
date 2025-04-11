@@ -22,7 +22,10 @@ const getTask = async (req: Request, res: Response, next: NextFunction) => {
 
 router.get("/tasks", async (req, res, next) => {
   try {
-    const tasks = await Tasks.find({ where: { user: { id: req.user?.id } } });
+    const tasks = await Tasks.find({
+      where: { user: { id: req.user?.id }},
+      order: { id: "ASC" }
+    });
 
     res.status(200).json(tasks);
   } catch (error) {
