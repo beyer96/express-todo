@@ -1,4 +1,4 @@
-import { LuCheck, LuTrash } from "react-icons/lu";
+import { LuCheck, LuSkipBack, LuTrash } from "react-icons/lu";
 import { FormEvent, useRef, useState } from "react";
 import TasksService from "../services/tasksService";
 import { Task as ITask, updateTask } from "../store/tasksSlice";
@@ -87,8 +87,16 @@ export default function Task({ task }: { task: ITask }) {
     }
   }
 
+  const toggleDone = async () => {
+    const updatedTask = await TasksService.updateTask(task.id, {
+      is_done: !task.is_done
+    });
+
+    dispatch(updateTask(updatedTask));
+  };
+
   return (
-    <div className="task d-flex justify-content-between align-items-center">
+    <div className={`${task.is_done ? "done" : ""} task d-flex justify-content-between align-items-center`}>
       <div className="d-flex flex-column">
         {
           titleEditable
@@ -102,8 +110,8 @@ export default function Task({ task }: { task: ITask }) {
         }
       </div>
       <div className="task-actions d-flex gap-3">
-        <button type="button" title={task.is_done ? "Mark as not done" : "Mark as done"}>
-          <LuCheck />
+        <button onClick={toggleDone} type="button" title={task.is_done ? "Mark as not done" : "Mark as done"}>
+          {task.is_done ? <LuSkipBack /> : <LuCheck />}
         </button>
         <button type="button" title="Delete task">
           <LuTrash />

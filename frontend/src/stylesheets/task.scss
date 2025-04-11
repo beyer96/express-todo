@@ -6,6 +6,11 @@
   border: 3px solid $gunmetal;
   border-radius: 0.5rem;
 
+  &.done {
+    background-color: $celadon;
+    text-decoration: line-through;
+  }
+
   &-title {
     font-weight: 700;
   }

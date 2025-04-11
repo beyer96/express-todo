@@ -35,13 +35,13 @@ router.get("/tasks", async (req, res, next) => {
 
 router.post("/task", async (req, res, next) => {
   try {
-    const { title, description, isDone } = req.body;
+    const { title, description, is_done } = req.body;
 
     const user = req.user;
     const task = Tasks.create({
       title,
       description,
-      is_done: isDone,
+      is_done,
       user
     });
 
@@ -69,11 +69,11 @@ router.route("/tasks/:taskId")
   .put(getTask, async (req, res, next) => {
     try {
       const task = req.task!;
-      const { title, description, isDone } = req.body;
+      const { title, description, is_done } = req.body;
 
       title && (task.title = title);
       description && (task.description = description);
-      isDone && (task.is_done = isDone);
+      typeof is_done === "boolean" && (task.is_done = is_done);
 
       const validationErrors = await validate(task, { skipMissingProperties: true });
       if (validationErrors.length) {
