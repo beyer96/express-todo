@@ -13,4 +13,8 @@ export default class TasksService {
 
     return response.data;
   }
+
+  static async removeTask(taskId: number) {
+    await axiosInstance.delete(`/tasks/${taskId}`);
+  }
 }

@@ -1,7 +1,7 @@
 import { LuCheck, LuSkipBack, LuTrash } from "react-icons/lu";
 import { FormEvent, useRef, useState } from "react";
 import TasksService from "../services/tasksService";
-import { Task as ITask, updateTask } from "../store/tasksSlice";
+import { Task as ITask, removeTask, updateTask } from "../store/tasksSlice";
 import { useAppDispatch } from "../store";
 
 export default function Task({ task }: { task: ITask }) {
@@ -95,6 +95,16 @@ export default function Task({ task }: { task: ITask }) {
     dispatch(updateTask(updatedTask));
   };
 
+  const handleRemoveTask = async () => {
+    try {
+      await TasksService.removeTask(task.id);
+
+      dispatch(removeTask(task));
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
   return (
     <div className={`${task.is_done ? "done" : ""} task d-flex justify-content-between align-items-center`}>
       <div className="d-flex flex-column">
@@ -113,7 +123,7 @@ export default function Task({ task }: { task: ITask }) {
         <button onClick={toggleDone} type="button" title={task.is_done ? "Mark as not done" : "Mark as done"}>
           {task.is_done ? <LuSkipBack /> : <LuCheck />}
         </button>
-        <button type="button" title="Delete task">
+        <button onClick={handleRemoveTask} type="button" title="Delete task">
           <LuTrash />
         </button>
       </div>
