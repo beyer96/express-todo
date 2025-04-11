@@ -25,15 +25,17 @@ export default function Navigation() {
         <li>
           <NavLink to="/">Home</NavLink>
         </li>
-        <li>
-          <NavLink to="/tasks">Tasks</NavLink>
-        </li>
         {user.username
           ? (
-            <li>
-              {user.username}
-              <button type="button" className="logout" onClick={handleLogout}>Log out</button>
+            <>
+              <li>
+              <NavLink to="/tasks">Tasks</NavLink>
             </li>
+              <li>
+                {user.username}
+                <button type="button" className="logout" onClick={handleLogout}>Log out</button>
+              </li>
+            </>
           )
           : (
             <li>
