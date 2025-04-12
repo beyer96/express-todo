@@ -2,9 +2,11 @@ import { FormEvent } from "react";
 import { registerNewUser, UserData } from "../services/authService"
 import { useAppDispatch } from "../store";
 import { setUser } from "../store/userSlice";
+import { useNavigate } from "react-router";
 
 export default function Signup() {
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const handleSignup = async (event: FormEvent) => {
     try {
       event.preventDefault();
@@ -14,7 +16,7 @@ export default function Signup() {
       const user = await registerNewUser(userData);
 
       dispatch(setUser(user));
-      form.reset();
+      navigate("/");
     } catch (error) {
       console.error(error);
     }
