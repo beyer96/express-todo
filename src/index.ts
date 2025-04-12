@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import "dotenv/config";
+require("@dotenvx/dotenvx").config({ path: [".env", ".env.development"] });
 import express from "express";
 import morgan from "morgan";
 import bodyParser from "body-parser";
