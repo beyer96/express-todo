@@ -5,19 +5,24 @@ import Stat from "../components/Stat";
 import { IconContext } from "react-icons/lib";
 import TasksService from "../services/tasksService";
 import { setTasks } from "../store/tasksSlice";
+import ProjectsService from "../services/projectsService";
+import { setProjects } from "../store/projectsSlice";
 
 export default function Home() {
   const dispatch = useAppDispatch();
   const user = useAppSelector(state => state.user);
   const tasks = useAppSelector(state => state.tasks);
+  const projects = useAppSelector(state => state.projects);
 
   useEffect(() => {
     if (!user.username) return;
 
     (async () => {
       const tasks = await TasksService.getTasks();
+      const projects = await ProjectsService.getProjects();
   
       dispatch(setTasks(tasks));
+      dispatch(setProjects(projects));
     })();
   }, [dispatch, user.username]);
 
@@ -31,7 +36,7 @@ export default function Home() {
               <LuListTodo />
             </IconContext.Provider>
           </Stat>
-          <Stat title="Opened projects" value={3}>
+          <Stat title="Opened projects" value={projects.filter(project => !project.is_done).length}>
             <IconContext.Provider value={{ size: "6rem" }}>
               <LuFolderGit />
             </IconContext.Provider>
