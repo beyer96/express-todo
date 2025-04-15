@@ -107,7 +107,7 @@ export default function Task({ task }: { task: ITask }) {
 
   return (
     <div className={`${task.is_done ? "done" : ""} task d-flex justify-content-between align-items-center`}>
-      <div className="d-flex flex-column">
+      <div className="d-flex flex-column flex-grow-1 flex-shrink-0 flex-basis-auto">
         {
           titleEditable
             ? <input type="text" onKeyDown={handleTitleInput} ref={titleInput} className="task-title" defaultValue={task.title} />
@@ -115,11 +115,11 @@ export default function Task({ task }: { task: ITask }) {
         }
         {
           descriptionEditable
-            ? <input onKeyDown={handleDescriptionInput} ref={descriptionInput} className="task-description" type="text" defaultValue={task.description} />
+            ? <input onKeyDown={handleDescriptionInput} ref={descriptionInput} className="task-description mt-2" type="text" defaultValue={task.description} />
             : <p onClick={makeDescriptionEditable} className="task-description mt-2">{task.description}</p>
         }
       </div>
-      <div className="task-actions d-flex gap-3">
+      <div className="task-actions d-flex gap-3 ms-5">
         <button onClick={toggleDone} type="button" title={task.is_done ? "Mark as not done" : "Mark as done"}>
           {task.is_done ? <LuSkipBack /> : <LuCheck />}
         </button>

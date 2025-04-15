@@ -4,6 +4,21 @@
   border: 3px solid $gunmetal;
   border-radius: 0.5rem;
 
+  button {
+    @extend .btn;
+
+    font-size: 1.5rem;
+  }
+
+  input {
+    border: 0;
+
+    &:active,
+    &:focus {
+      outline: 2px solid $gunmetal;
+    }
+  }
+
   &.done {
     background-color: $celadon;
     text-decoration: line-through;
@@ -15,13 +30,5 @@
 
   &-description {
     color: color.adjust($gunmetal, $lightness: 40%);
-  }
-
-  button {
-    @extend .btn;
-
-    width: 2.5rem;
-    aspect-ratio: 1;
-    font-size: 1.5rem;
   }
 }
