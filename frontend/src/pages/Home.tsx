@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { Link } from "react-router";
 import { LuListTodo, LuFolderGit, LuClipboardCheck } from "react-icons/lu";
 import { useAppDispatch, useAppSelector } from "../store"
 import Stat from "../components/Stat";
@@ -51,7 +52,11 @@ export default function Home() {
     )
   } else {
     return (
-      <h1>You are not logged in!</h1>
+      <section className="text-center mt-5">
+        <h1>You are not logged in!</h1>
+        <p>Nothing to be seen here, unless you are a user of this app.</p>
+        <p className="mt-3"><Link to="/login">Log in</Link> or <Link to="/signup">sign up</Link> to continue.</p>
+      </section>
     )
   }
 }
