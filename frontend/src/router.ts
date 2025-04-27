@@ -5,6 +5,9 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Tasks from "./pages/Tasks";
 import NewTask from "./pages/NewTask";
+import TasksService from "./services/tasksService";
+import ProjectsService from "./services/projectsService";
+import { LOCAL_STORAGE_ACCESS_TOKEN_KEY } from "./utils";
 
 const router = createBrowserRouter([
   {
@@ -12,7 +15,15 @@ const router = createBrowserRouter([
     children: [
       {
         path: "/",
-        Component: Home
+        Component: Home,
+        loader: async () => {
+          if (!localStorage.getItem(LOCAL_STORAGE_ACCESS_TOKEN_KEY)) return { tasks: undefined, projects: undefined };
+
+          const tasks = await TasksService.getTasks();
+          const projects = await ProjectsService.getProjects();
+
+          return { tasks, projects };
+        }
       },
       {
         path: "/login",
@@ -24,7 +35,14 @@ const router = createBrowserRouter([
       },
       {
         path: "/tasks",
-        Component: Tasks
+        Component: Tasks,
+        loader: async () => {
+          if (!localStorage.getItem(LOCAL_STORAGE_ACCESS_TOKEN_KEY)) return { tasks: undefined };
+
+          const tasks = await TasksService.getTasks();
+
+          return { tasks };
+        }
       },
       {
         path: "/tasks/new",

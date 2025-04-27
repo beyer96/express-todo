@@ -25,7 +25,9 @@ axiosInstance.interceptors.response.use(
       try {
         const response = await axiosInstance.post("/auth/token");
 
-        localStorage.setItem(LOCAL_STORAGE_ACCESS_TOKEN_KEY, response.data.accessToken);
+        if (response.data.accessToken) {
+          localStorage.setItem(LOCAL_STORAGE_ACCESS_TOKEN_KEY, response.data.accessToken);
+        }
 
         originalRequest.headers.Authorization = `Bearer ${response.data.accessToken}`;
         originalRequest._retry = true;

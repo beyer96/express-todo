@@ -1,31 +1,27 @@
-import { useEffect } from "react";
-import { Link } from "react-router";
+import { Link, useLoaderData } from "react-router";
 import { LuListTodo, LuFolderGit, LuClipboardCheck } from "react-icons/lu";
 import { useAppDispatch, useAppSelector } from "../store"
 import Stat from "../components/Stat";
 import { IconContext } from "react-icons/lib";
-import TasksService from "../services/tasksService";
 import { setTasks } from "../store/tasksSlice";
-import ProjectsService from "../services/projectsService";
 import { setProjects } from "../store/projectsSlice";
+import { useEffect } from "react";
 
 export default function Home() {
-  const dispatch = useAppDispatch();
   const user = useAppSelector(state => state.user);
   const tasks = useAppSelector(state => state.tasks);
   const projects = useAppSelector(state => state.projects);
+  const dispatch = useAppDispatch();
+  const { tasks: loadedTasks, projects: loadedProjects } = useLoaderData();
 
   useEffect(() => {
-    if (!user.username) return;
+    if (user.username) {
+      console.log("WTF");
+      dispatch(setTasks(loadedTasks));
+      dispatch(setProjects(loadedProjects));
+    }
+  }, [dispatch, loadedTasks, loadedProjects, user]);
 
-    (async () => {
-      const tasks = await TasksService.getTasks();
-      const projects = await ProjectsService.getProjects();
-  
-      dispatch(setTasks(tasks));
-      dispatch(setProjects(projects));
-    })();
-  }, [dispatch, user.username]);
 
   if (user.username) {
     return (
